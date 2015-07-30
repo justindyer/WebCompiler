@@ -21,6 +21,8 @@ namespace WebCompilerTest
         {
             File.Delete("../../artifacts/less/test.css");
             File.Delete("../../artifacts/less/test.min.css");
+            File.Delete("../../artifacts/less/test2.css");
+            File.Delete("../../artifacts/less/test2.min.css");
         }
 
         [TestMethod, TestCategory("LESS")]
@@ -53,6 +55,15 @@ namespace WebCompilerTest
         {
             var result = ConfigHandler.GetConfigs("../../artifacts/lessconfig.json");
             Assert.IsTrue(result.First().Options.Count == 2);
+        }
+
+        [TestMethod, TestCategory("LESS")]
+        public void CompileLessWithGlobbing()
+        {
+            Cleanup();
+            var result = _processor.Process("../../artifacts/lessconfigglobbing.json");
+            Assert.IsTrue(File.Exists("../../artifacts/less/test.css"));
+            Assert.IsTrue(File.Exists("../../artifacts/less/test2.css"));
         }
 
         [TestMethod, TestCategory("LESS")]

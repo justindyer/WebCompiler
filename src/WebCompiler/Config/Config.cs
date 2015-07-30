@@ -54,6 +54,27 @@ namespace WebCompiler
         internal string Output { get; set; }
 
         /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Config() { }
+
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="config"></param>
+        public Config(Config config)
+        {
+            FileName = config.FileName;
+            OutputFile = config.OutputFile;
+            InputFile = config.InputFile;
+            Minify = config.Minify;
+            IncludeInProject = config.IncludeInProject;
+            SourceMap = config.SourceMap;
+            Options = config.Options;
+            Output = config.Output;
+        }
+
+        /// <summary>
         /// Converts the relative input file to an absolute file path.
         /// </summary>
         public string GetAbsoluteInputFile()

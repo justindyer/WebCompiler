@@ -70,9 +70,11 @@
     <None Include="artifacts\coffee\test.coffee" />
     <None Include="artifacts\coffeeconfig.json" />
     <None Include="artifacts\config\originalcoffeeconfig.json" />
+    <None Include="artifacts\lessconfigglobbing.json" />
     <None Include="artifacts\lessconfigParseError.json" />
     <None Include="artifacts\lessconfigError.json" />
     <None Include="artifacts\less\parseerror.less" />
+    <None Include="artifacts\less\test2.less" />
     <None Include="artifacts\options\scss\scssconfigecho.json" />
     <None Include="artifacts\options\scss\scssconfigcompressed.json" />
     <None Include="artifacts\options\scss\scssconfigcompact.json" />

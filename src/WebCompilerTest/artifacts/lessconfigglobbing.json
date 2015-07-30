@@ -1,0 +1,11 @@
+﻿[
+	{
+		"inputFile": "less/*.less",
+		"minify": { },
+		"includeInProject": true,
+		"options": {
+			"foo": 1,
+			"bar": "baz"
+		}
+	}
+]

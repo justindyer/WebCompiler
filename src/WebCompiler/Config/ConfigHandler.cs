@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using System;
 
 namespace WebCompiler
 {
@@ -57,8 +58,37 @@ namespace WebCompiler
                 return Enumerable.Empty<Config>();
 
             string content = File.ReadAllText(fileName);
-            var configs = JsonConvert.DeserializeObject<IEnumerable<Config>>(content);
-            string folder = Path.GetDirectoryName(file.FullName);
+            var configs = JsonConvert.DeserializeObject<IEnumerable<Config>>(content).ToList();
+            //string folder = Path.GetDirectoryName(file.FullName);
+
+            List<Config> globbedLessFiles = configs.Where(x => x.InputFile.Contains("*.less")).ToList();
+
+            //If an input file contains a * glob character, treat that config object as a representation
+            //of multiple configs. Then expand those to the represented configs.
+            foreach (Config config in globbedLessFiles)
+            {
+                string baseDirectory = file.Directory.FullName;
+                string directoryForLessFiles = config.InputFile.Substring(0, config.InputFile.LastIndexOf('*'));
+
+                //hard coding the search for *.less for now. This can be changed later.
+                string[] inputFilePaths = Directory.GetFiles(Path.Combine(baseDirectory, directoryForLessFiles), "*.less");
+
+                Uri baseUri = new Uri(baseDirectory + Path.DirectorySeparatorChar);
+                foreach (string inputPath in inputFilePaths)
+                {
+                    Uri fileUri = new Uri(inputPath);
+                    string relativePath = baseUri.MakeRelativeUri(fileUri).ToString();
+
+                    Config resolvedConfig = new Config(config);
+                    resolvedConfig.InputFile = relativePath;
+                    resolvedConfig.OutputFile = relativePath.Substring(0, relativePath.LastIndexOf(".")) + ".css";
+
+                    configs.Add(resolvedConfig);
+                }
+            }
+
+            //Remove the globbed less files from the config list.
+            globbedLessFiles.ForEach(x => configs.Remove(x));
 
             foreach (Config config in configs)
             {
