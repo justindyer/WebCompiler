@@ -21,6 +21,7 @@ namespace WebCompiler
         public override bool Execute()
         {
             FileInfo configFile = new FileInfo(FileName);
+            CompilerService.Initialize();
 
             Log.LogMessage(MessageImportance.High, Environment.NewLine + "WebCompiler: Begin compiling " + configFile.Name);
 
@@ -31,7 +32,9 @@ namespace WebCompiler
             }
 
             ConfigFileProcessor processor = new ConfigFileProcessor();
+            processor.BeforeProcess += (s, e) => { RemoveReadonlyFlagFromFile(e.Config.GetAbsoluteOutputFile()); };
             processor.AfterProcess += Processor_AfterProcess;
+            processor.BeforeWritingSourceMap += (s, e) => { RemoveReadonlyFlagFromFile(e.ResultFile); };
             processor.AfterWritingSourceMap += Processor_AfterWritingSourceMap;
             FileMinifier.AfterWritingMinFile += FileMinifier_AfterWritingMinFile;
 
@@ -63,6 +66,14 @@ namespace WebCompiler
             }
         }
 
+        private static void RemoveReadonlyFlagFromFile(string fileName)
+        {
+            FileInfo file = new FileInfo(fileName);
+
+            if (file.Exists && file.IsReadOnly)
+                file.IsReadOnly = false;
+        }
+
         private void Processor_AfterProcess(object sender, CompileFileEventArgs e)
         {
             Log.LogMessage(MessageImportance.High, "\tCompiled " + e.Config.OutputFile);
@@ -83,7 +94,7 @@ namespace WebCompiler
             Uri baseUri = new Uri(baseFile, UriKind.RelativeOrAbsolute);
             Uri fileUri = new Uri(file, UriKind.RelativeOrAbsolute);
 
-            return baseUri.MakeRelativeUri(fileUri).ToString();
+            return Uri.EscapeDataString(baseUri.MakeRelativeUri(fileUri).ToString());
         }
     }
 }

@@ -12,7 +12,7 @@ or get the
 
 ### Features
 
-- Compilation of LESS, Scss and CoffeeScript files
+- Compilation of LESS, Scss and (Iced)CoffeeScript files
 - Saving a source file triggers re-compilation automatically
 - Specify compiler options for each individual file
 - Error List integration
@@ -20,6 +20,7 @@ or get the
 - Minify the compiled output
 - Minification options for each language is customizable
 - Shows a watermark when opening a generated file
+- Shortcut to compile all specified files in solution
 
 ### Getting started
 
@@ -61,6 +62,14 @@ A NuGet package will be installed into the `packages` folder without adding
 any files to the project itself. thead NuGet package contains an MSBuild
 task that will run the exact same compilers on the `compilerconfig.json`
 file in the root of the project.
+
+### Compile all
+
+You can run the compiler on all `compilerconfig.json` files
+in the solution by using the keyboard shortcut `Shift+Alt+Y`
+or by using the button on the top level Build menu.
+
+![Compile all](art/build-menu.png)
 
 ### Error list
 

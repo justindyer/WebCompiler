@@ -139,7 +139,6 @@ namespace WebCompilerVsix.Commands
         {
             return new Config
             {
-                IncludeInProject = true,
                 OutputFile = outputFile,
                 InputFile = inputfile
             };
@@ -150,7 +149,7 @@ namespace WebCompilerVsix.Commands
             Uri baseUri = new Uri(baseFile, UriKind.RelativeOrAbsolute);
             Uri fileUri = new Uri(file, UriKind.RelativeOrAbsolute);
 
-            return baseUri.MakeRelativeUri(fileUri).ToString();
+            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fileUri).ToString());
         }
 
         private static string GetOutputFileName(string inputFile, string fileName)
@@ -158,14 +157,14 @@ namespace WebCompilerVsix.Commands
             string extension = Path.GetExtension(fileName);
             string ext = "css";
 
-            if (extension == ".coffee")
+            if (extension == ".coffee" || extension == ".iced")
                 ext = "js";
 
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
                 dialog.InitialDirectory = Path.GetDirectoryName(inputFile);
                 dialog.DefaultExt = ext;
-                dialog.FileName = Path.GetFileNameWithoutExtension(fileName);
+                dialog.FileName = Path.GetFileNameWithoutExtension(fileName) + "." + ext;
                 dialog.Filter = ext.ToUpperInvariant() + " File|*." + ext;
 
                 DialogResult result = dialog.ShowDialog();

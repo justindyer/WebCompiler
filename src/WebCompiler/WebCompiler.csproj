@@ -44,10 +44,6 @@
       <HintPath>..\..\packages\CoffeeSharp.0.6\lib\CoffeeSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="dotless.Core, Version=1.5.1.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\dotless.1.5.1-alpha2\lib\dotless.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Jurassic, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CoffeeSharp.0.6\lib\Jurassic.dll</HintPath>
       <Private>True</Private>
@@ -70,9 +66,17 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compile\BaseOptions.cs" />
+    <Compile Include="Compile\IcedCoffeeScriptOptions.cs" />
+    <Compile Include="Compile\IcedCoffeeScriptCompiler.cs" />
     <Compile Include="Compile\CompilerService.cs" />
     <Compile Include="Compile\ICompiler.cs" />
     <Compile Include="Compile\CoffeeScriptCompiler.cs" />
@@ -81,6 +85,7 @@
     <Compile Include="Compile\SassOptions.cs" />
     <Compile Include="Compile\LessOptions.cs" />
     <Compile Include="Compile\SassCompiler.cs" />
+    <Compile Include="Config\ConfigProcessedEventArgs.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="Compile\CompilerError.cs" />
     <Compile Include="Compile\CompilerResult.cs" />
@@ -104,11 +109,24 @@
     <None Include="MSBuild\BuildWebCompiler.targets">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="Node\prepare.cmd" />
+    <EmbeddedResource Include="Node\node.7z" />
+    <EmbeddedResource Include="Node\node_modules.7z" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Node\7z.dll" />
+    <EmbeddedResource Include="Node\7z.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>$(SolutionDir)packages\NuGet.CommandLine.2.8.5\tools\nuget.exe pack .\msbuild\BuildWebCompiler.nuspec</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>$(SolutionDir)build\build.cmd</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Linq;
 using System.Windows.Forms;
+using System.Windows.Threading;
+using EnvDTE;
 using EnvDTE80;
 using WebCompiler;
 
@@ -24,6 +27,7 @@ namespace WebCompilerVsix
                 if (_processor == null)
                 {
                     _processor = new ConfigFileProcessor();
+                    _processor.ConfigProcessed += ConfigProcessed;
                     _processor.AfterProcess += AfterProcess;
                     _processor.BeforeProcess += (s, e) => { ProjectHelpers.CheckFileOutOfSourceControl(e.Config.GetAbsoluteOutputFile()); };
                     _processor.AfterWritingSourceMap += AfterWritingSourceMap;
@@ -34,10 +38,18 @@ namespace WebCompilerVsix
 
                     FileMinifier.BeforeWritingGzipFile += (s, e) => { ProjectHelpers.CheckFileOutOfSourceControl(e.ResultFile); };
                     FileMinifier.AfterWritingGzipFile += (s, e) => { ProjectHelpers.AddNestedFile(e.OriginalFile, e.ResultFile); };
+
+                    WebCompiler.CompilerService.Initializing += (s, e) => { _dte.StatusBar.Text = "Installing updated versions of the compilers..."; };
+                    WebCompiler.CompilerService.Initialized += (s, e) => { _dte.StatusBar.Text = "Done installing the compiler"; };
                 }
 
                 return _processor;
             }
+        }
+
+        private static void ConfigProcessed(object sender, ConfigProcessedEventArgs e)
+        {
+            _dte.StatusBar.Progress(true, $"Compiling \"{e.Config.InputFile}\"", e.AmountProcessed, e.Total);
         }
 
         public static void Process(string configFile)
@@ -46,13 +58,35 @@ namespace WebCompilerVsix
             {
                 try
                 {
+                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationBuild);
+
                     var result = Processor.Process(configFile);
                     ErrorListService.ProcessCompilerResults(result, configFile);
+
+                    if (!result.Any(c => c.HasErrors))
+                    {
+                        StatusText("Done compiling");
+                    }
+                }
+                catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+                    string message = $"{Constants.VSIX_NAME} found an error in {Constants.CONFIG_FILENAME}";
+                    Logger.Log(message);
+                    StatusText(message);
+                    _dte.StatusBar.Progress(false);
+
                 }
                 catch (Exception ex)
                 {
                     Logger.Log(ex);
                     ShowError(configFile);
+                    _dte.StatusBar.Progress(false);
+                    StatusText($"{Constants.VSIX_NAME} couldn't compile succesfully");
+                }
+                finally
+                {
+                    _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationBuild);
+                    _dte.StatusBar.Progress(false);
                 }
             });
         }
@@ -63,16 +97,37 @@ namespace WebCompilerVsix
             {
                 try
                 {
+                    _dte.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationBuild);
+                    StatusText($"Compiling \"{Path.GetFileName(sourceFile)}\"...");
+
                     var result = Processor.SourceFileChanged(configFile, sourceFile);
                     ErrorListService.ProcessCompilerResults(result, configFile);
+                }
+                catch (FileNotFoundException ex)
+                {
+                    Logger.Log($"{Constants.VSIX_NAME} could not find \"{ex.FileName}\"");
+                    StatusText($"Compiling \"{Path.GetFileName(sourceFile)}\"...");
                 }
                 catch (Exception ex)
                 {
                     Logger.Log(ex);
                     ShowError(configFile);
                 }
+                finally
+                {
+                    _dte.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationBuild);
+                }
             });
         }
+
+        private static void StatusText(string message)
+        {
+            WebCompilerPackage._dispatcher.BeginInvoke(new Action(() =>
+            {
+                _dte.StatusBar.Text = message;
+            }), DispatcherPriority.ApplicationIdle, null);
+        }
+
         private static void ShowError(string configFile)
         {
             MessageBox.Show($"There is an error in the {Constants.CONFIG_FILENAME} file. This could be due to a change in the format after this extension was updated.", Constants.VSIX_NAME, MessageBoxButtons.OK, MessageBoxIcon.Information);

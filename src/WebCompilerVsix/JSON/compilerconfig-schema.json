@@ -68,6 +68,10 @@
         },
         "minify": {
           "$ref": "#/definitions/cssOptions"
+        },
+        "sourceMap": {
+          "description": "Set to true to automatically create inline source map files.",
+          "type": "boolean"
         }
       }
     },
@@ -100,7 +104,7 @@
           "$ref": "#/definitions/cssOptions"
         },
         "sourceMap": {
-          "description": "Set to true to automatically create a .map file. Only works for .scss files.",
+          "description": "Set to true to automatically create inline source map files.",
           "type": "boolean"
         }
       }
@@ -135,6 +139,28 @@
             }
           },
           "allOf": [ { "$ref": "#/definitions/ajaxminBaseSettings" } ]
+        }
+      }
+    },
+
+    "icedCoffeeScriptOptions": {
+      "properties": {
+        "inputFile": {
+          "pattern": "\\.iced$"
+        },
+        "options": {
+          "properties": {
+             "bare": {
+              "description": "CoffeeScript only. Compile the JavaScript without the top-level function safety wrapper.",
+              "type": "boolean"
+            },
+            "runtimeMode": {
+              "enum": [ "node", "inline", "none", "window" ]
+            }
+          }
+        },
+        "minify": {
+          "allOf": [ { "$ref": "#/definitions/coffeeScriptOptions/properties/minify" } ]
         }
       }
     },
@@ -175,7 +201,6 @@
         "outputFile": {
           "description": "The relative path to the desired output file name.",
           "type": "string",
-          "format": "uri",
           "minLength": 1
         }
       },
@@ -183,12 +208,13 @@
       "oneOf": [
         { "$ref": "#/definitions/lessOptions" },
         { "$ref": "#/definitions/sassOptions" },
-        { "$ref": "#/definitions/coffeeScriptOptions" }
+        { "$ref": "#/definitions/coffeeScriptOptions" },
+        { "$ref": "#/definitions/icedCoffeeScriptOptions" }
       ]
     }
   },
 
-	"items": {
-		"$ref": "#/definitions/config"
-	}
+  "items": {
+    "$ref": "#/definitions/config"
+  }
 }
